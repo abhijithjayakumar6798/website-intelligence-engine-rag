@@ -71,7 +71,8 @@ def crawl_page(url, visited_urls=None, depth=0, max_depth=2):
         SKIP_PATHS = [
             "/privacy-policy/",
             "/terms-of-use/",
-            "/cookie-policy/"
+            "/cookie-policy/",
+            "/sitemap/"
         ]
 
         if any(path in full_url for path in SKIP_PATHS):
