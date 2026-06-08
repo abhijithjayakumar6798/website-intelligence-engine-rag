@@ -1,7 +1,7 @@
 from backend.embedder import get_embedding
 from backend.pinecone_manager import index
 
-query = "How can AI automate business tasks?"
+query = "What services does ClaySys provide?"
 
 query_vector = get_embedding(query)
 

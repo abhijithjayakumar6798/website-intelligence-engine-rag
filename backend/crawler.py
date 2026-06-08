@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from backend.cleaner import clean_content
 from backend.chunker import chunk_text
-from backend.embedder import get_embedding
 
 
 def normalize_url(url):
@@ -51,18 +50,13 @@ def crawl_page(url, visited_urls=None, depth=0, max_depth=2):
     chunks = chunk_text(content)
     links = set()
 
-    embedded_chunks = []
-    for chunk in chunks:
-        embedded_chunks.append({
-        "text": chunk,
-        "embedding": get_embedding(chunk)
-    })
+    
 
     page_data = {
     "url": url,
     "title": title,
-    "content": content[:1000],
-    "chunks": embedded_chunks
+    "content": content,
+    "chunks": chunks
     }
     
     pages = [page_data]
