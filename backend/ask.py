@@ -4,7 +4,7 @@ from backend.groq_client import generate_response
 
 def ask_question(question):
 
-    matches = retrieve_chunks(question, top_k=5)
+    matches = retrieve_chunks(question, top_k=10)
 
     context = "\n\n".join(
         match.metadata["text"]
@@ -12,12 +12,16 @@ def ask_question(question):
     )
 
     prompt = f"""
-You are a helpful assistant.
+You are a website intelligence assistant.
 
-Answer ONLY using the provided context.
+Answer the question using ONLY the provided website context.
 
-If the answer cannot be found in the context, say:
-"I could not find that information on the website."
+Rules:
+- Do not invent facts.
+- If the answer is not available in the context, say:
+  "I could not find that information on the website."
+- Provide a concise but complete answer.
+- Combine information from multiple context sections when needed.
 
 Context:
 {context}
@@ -35,8 +39,22 @@ Question:
 
         if url not in sources:
             sources.append(url)
-
-    return {
-        "answer": answer,
-        "sources": sources
+    
+    if not matches:
+        return {
+        "answer": "I could not find that information on the website.",
+        "sources": []
     }
+
+    top_score = matches[0].score
+
+    if top_score < 0.50:
+        return {
+            "answer": "I could not find that information on the website.",
+            "sources": []
+        }
+    
+    return {
+    "answer": answer,
+    "sources": sources
+}

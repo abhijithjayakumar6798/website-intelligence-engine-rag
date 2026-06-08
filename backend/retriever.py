@@ -2,7 +2,7 @@ from backend.embedder import get_embedding
 from backend.pinecone_manager import index
 
 
-def retrieve_chunks(query, top_k=5):
+def retrieve_chunks(query, top_k=10):
 
     query_embedding = get_embedding(query)
 

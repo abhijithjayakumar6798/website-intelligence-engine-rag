@@ -68,6 +68,14 @@ def crawl_page(url, visited_urls=None, depth=0, max_depth=2):
             continue
 
         full_url = urljoin(url, href)
+        SKIP_PATHS = [
+            "/privacy-policy/",
+            "/terms-of-use/",
+            "/cookie-policy/"
+        ]
+
+        if any(path in full_url for path in SKIP_PATHS):
+            continue
         if "/cdn-cgi/" in full_url:
             continue
 
