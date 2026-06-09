@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.crawler import crawl_page
 from backend.ingest import ingest_website
@@ -9,7 +10,13 @@ from backend.ask import ask_question
 app = FastAPI(
     title="Website Intelligence Engine"
 )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class CrawlRequest(BaseModel):
     url: str
