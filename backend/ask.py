@@ -4,9 +4,15 @@ from backend.tavily_search import search_web
 
 
 def ask_question(question):
-    with open("backend/current_website.txt", "r") as f:
-        current_website = f.read().strip()
-
+    try:
+        with open("backend/current_website.txt", "r") as f:
+            current_website = f.read().strip()
+    except FileNotFoundError:
+        return {
+            "answer": "Please ingest a website first.",
+            "sources": [],
+            "source_type": "none"
+        }
 
     if not question.strip():
         return {
