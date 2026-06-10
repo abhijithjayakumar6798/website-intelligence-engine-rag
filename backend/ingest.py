@@ -1,9 +1,16 @@
 from backend.crawler import crawl_page
 from backend.embedder import get_embedding
 from backend.pinecone_manager import index
+from urllib.parse import urlparse
 
 
 def ingest_website(url):
+
+    if not url.strip():
+        return {
+            "error": "Please provide a website URL."
+        }
+
     """
     Crawl website and store chunks in Pinecone.
     """
@@ -19,6 +26,7 @@ def ingest_website(url):
         page_url = page["url"]
         page_title = page["title"]
         chunks = page["chunks"]
+        website_domain = urlparse(url).netloc
 
         for i, chunk in enumerate(chunks):
 
@@ -35,14 +43,16 @@ def ingest_website(url):
                         "metadata": {
                             "url": page_url,
                             "title": page_title,
-                            "text": chunk
+                            "text": chunk,
+                            "website": website_domain
                         }
                     }
                 ]
             )
 
             total_chunks += 1
-
+    with open("backend/current_website.txt", "w") as f:
+        f.write(website_domain)
     return {
         "pages_crawled": len(pages),
         "chunks_stored": total_chunks

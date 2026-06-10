@@ -4,8 +4,18 @@ from backend.tavily_search import search_web
 
 
 def ask_question(question):
+    with open("backend/current_website.txt", "r") as f:
+        current_website = f.read().strip()
 
-    matches = retrieve_chunks(question, top_k=10)
+
+    if not question.strip():
+        return {
+            "answer": "Please enter a question.",
+            "sources": [],
+            "source_type": "none"
+        }
+    
+    matches = retrieve_chunks(question, current_website,top_k=10)
 
     if not matches:
         return {
@@ -15,9 +25,21 @@ def ask_question(question):
         }
 
     top_score = matches[0].score
+    print("\n")
+    print("=" * 50)
+    print("QUESTION:", question)
+    print("TOP SCORE:", top_score)
+
+    for i, match in enumerate(matches[:3]):
+        print(f"\nMATCH {i+1}")
+        print("Score:", match.score)
+        print("URL:", match.metadata.get("url"))
+
+    print("=" * 50)
+    print("\n")
 
     # Low confidence -> Tavily fallback
-    if top_score < 0.50:
+    if top_score < 0.30:
 
         tavily_result = search_web(question)
 
