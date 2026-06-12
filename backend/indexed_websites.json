@@ -1,17 +1,7 @@
 {
-  "claysys.com": {
-    "url": "https://claysys.com",
-    "pages_crawled": 12,
-    "chunks_stored": 124
-  },
-  "www.scrapethissite.com": {
-    "url": "https://www.scrapethissite.com",
-    "pages_crawled": 8,
-    "chunks_stored": 89
-  },
-  "www.primevideo.com": {
-    "url": "https://www.primevideo.com",
-    "pages_crawled": 5,
-    "chunks_stored": 53
+  "roadmap.sh": {
+    "url": "https://roadmap.sh/",
+    "pages_crawled": 114,
+    "chunks_stored": 1229
   }
 }

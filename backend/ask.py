@@ -1,11 +1,14 @@
+import os
 from backend.retriever import retrieve_chunks
 from backend.groq_client import generate_response
 from backend.tavily_search import search_web
 
 
 def ask_question(question):
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    current_path = os.path.join(BASE_DIR, "current_website.txt")
     try:
-        with open("backend/current_website.txt", "r") as f:
+        with open(current_path, "r") as f:
             current_website = f.read().strip()
     except FileNotFoundError:
         return {
@@ -45,7 +48,7 @@ def ask_question(question):
     print("\n")
 
     # Low confidence -> Tavily fallback
-    if top_score < 0.30:
+    if top_score < 0.40:
 
         tavily_result = search_web(question)
 
@@ -95,6 +98,38 @@ Question:
 """
 
     answer = generate_response(prompt)
+
+    refusal_keywords = [
+        "could not find", 
+        "does not contain", 
+        "does not mention", 
+        "no information",
+        "not mentioned",
+        "not found",
+        "insufficient information"
+    ]
+    is_refusal = any(kw in answer.lower() for kw in refusal_keywords)
+
+    if is_refusal:
+        print("RAG context was insufficient. Falling back to Tavily search...")
+        tavily_result = search_web(question)
+        fallback_prompt = f"""
+You are a helpful assistant.
+
+Answer the question using the provided web search results.
+
+Context:
+{tavily_result["context"]}
+
+Question:
+{question}
+"""
+        answer = generate_response(fallback_prompt)
+        return {
+            "answer": answer,
+            "sources": tavily_result["sources"],
+            "source_type": "web"
+        }
 
     sources = []
 
