@@ -60,8 +60,11 @@ def ingest_website(url):
         page_title = page.get("title", "")
         chunks = page.get("chunks", [])
         for i, chunk in enumerate(chunks):
+            cleaned_chunk = chunk.strip()
+            if len(cleaned_chunk) < 15:  # Skip empty or near-empty chunks
+                continue
             flat_chunks.append({
-                "text": chunk,
+                "text": cleaned_chunk,
                 "url": page_url,
                 "title": page_title,
                 "index": i
@@ -79,20 +82,11 @@ def ingest_website(url):
     # Batch embedding generation
     print("Generating embeddings...")
     embed_start_time = time.time()
-    embeddings = []
     texts = [item["text"] for item in flat_chunks]
     
-    embed_batch_size = 32
-    total_embed_batches = math.ceil(total_chunks / embed_batch_size)
+    # Let SentenceTransformers handle batching internally in a single call
+    embeddings = get_embeddings(texts, batch_size=64)
     
-    for i in range(0, total_chunks, embed_batch_size):
-        batch_texts = texts[i:i + embed_batch_size]
-        batch_num = (i // embed_batch_size) + 1
-        print(f"Embedding batch {batch_num}/{total_embed_batches}")
-        
-        batch_embeddings = get_embeddings(batch_texts, batch_size=embed_batch_size)
-        embeddings.extend(batch_embeddings)
-        
     embed_time = time.time() - embed_start_time
 
     # Build Pinecone vectors list
@@ -130,10 +124,19 @@ def ingest_website(url):
     upsert_time = time.time() - upsert_start_time
     total_ingest_time = time.time() - total_start_time
 
+    # Performance calculations
+    avg_embed_time = (embed_time / total_chunks) if total_chunks > 0 else 0
+    avg_chunks_per_page = (total_chunks / len(pages)) if len(pages) > 0 else 0
+
     # Print performance log summary
     print("\n--- Ingestion Performance ---")
-    print(f"Total chunks: {total_chunks}")
+    print(f"Pages crawled: {len(pages)}")
+    print(f"Chunks generated: {total_chunks}")
+    print(f"Embedding batch size: 64")
+    print(f"Total embedding calls: 1")
+    print(f"Average chunks per page: {avg_chunks_per_page:.2f}")
     print(f"Embedding time: {embed_time:.2f} sec")
+    print(f"Average embedding time per chunk: {avg_embed_time:.4f} sec/chunk")
     print(f"Upsert time: {upsert_time:.2f} sec")
     print(f"Total ingestion time: {total_ingest_time:.2f} sec")
     print("-----------------------------\n")

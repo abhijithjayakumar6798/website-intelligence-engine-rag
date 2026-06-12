@@ -7,10 +7,12 @@ from backend.chunker import chunk_text
 
 def normalize_url(url):
     parsed = urlparse(url)
-
-    domain = parsed.netloc.replace("www.", "")
-
-    return f"{parsed.scheme}://{domain}{parsed.path}"
+    domain = parsed.netloc.replace("www.", "").lower()
+    path = parsed.path
+    # Strip trailing slash if it is not the root path
+    if path.endswith('/') and len(path) > 1:
+        path = path[:-1]
+    return f"{parsed.scheme}://{domain}{path}"
 
 
 def crawl_page(url, visited_urls=None, depth=0, max_depth=2):
